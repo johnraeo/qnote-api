@@ -149,7 +149,8 @@ const forgotPass = asyncHandler(async (req, res) => {
             console.error('Error sending email:', error);
             return res.status(500).send('Error sending email');
         }
-        res.send('Reset link sent');
+        // res.send('Reset link sent');
+        res.json({ message: "Reset link sent", status: "success" });
     });
 })
 
@@ -162,7 +163,8 @@ const resetPass = asyncHandler(async (req, res) => {
     user.resetToken = undefined;
     user.resetTokenExpiration = undefined;
     await user.save();
-    res.send('Password reset successfully');
+    // res.send('Password reset successfully');
+    res.json({ message: "Password reset successfully", status: "success" });
 })
 
 module.exports = {
