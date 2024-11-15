@@ -2,6 +2,19 @@ const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Set up Nodemailer transporter
+const transporter = nodemailer.createTransport({
+    host: 'smtp.mail.yahoo.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: 'johnrae08@yahoo.com', // Your email address
+        pass: 'mtitrxcywwtouepf', // Your email password or app password
+    },
+});
 
 // @desc Login
 // @route POST /auth
@@ -100,8 +113,62 @@ const logout = (req, res) => {
     res.json({ message: 'Cookie cleared' })
 }
 
+// @desc Forgot password
+// @route POST /auth/forgot-password
+// @access Public
+const forgotPass = asyncHandler(async (req, res) => {
+    const { email } = req.body
+
+    if (!email) {
+        return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    const foundUser = await User.findOne({ email }).exec()
+
+    if (!foundUser || !foundUser.active) {
+        return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+    const token = crypto.randomBytes(32).toString('hex'); // Generate a token
+    foundUser.resetToken = token;
+    foundUser.resetTokenExpiration = Date.now() + 3600000; // 1 hour
+    await foundUser.save();
+
+    // Send email Logic here using Nodemailer
+    const resetURL = `http://localhost:8001/reset-pass/${token}`; // Change the URL to your frontend route
+    const mailOptions = {
+        from: 'johnrae08@yahoo.com',
+        to: email,
+        subject: 'Password Reset',
+        html: `<p>You requested a password reset</p>
+               <p>Click this <a href="${resetURL}">link</a> to reset your password.</p>`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error sending email:', error);
+            return res.status(500).send('Error sending email');
+        }
+        res.send('Reset link sent');
+    });
+})
+
+const resetPass = asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    const user = await User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } });
+    if (!user) return res.status(400).send('Invalid or expired token');
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetToken = undefined;
+    user.resetTokenExpiration = undefined;
+    await user.save();
+    res.send('Password reset successfully');
+})
+
 module.exports = {
     login,
     refresh,
-    logout
+    logout,
+    forgotPass,
+    resetPass
 }
