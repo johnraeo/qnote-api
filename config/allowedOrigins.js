@@ -1,5 +1,5 @@
 const allowedOrigins = [
-    'https://qnotes.onrender.com',
+    'https://qnote.onrender.com',
     'http://localhost:8001'
 ];
 
