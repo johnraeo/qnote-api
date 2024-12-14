@@ -135,7 +135,10 @@ const forgotPass = asyncHandler(async (req, res) => {
     await foundUser.save();
 
     // Send email Logic here using Nodemailer
-    const resetURL = `http://localhost:8001/reset-pass/${token}`; // Change the URL to your frontend route
+    /* For Dev */
+    // const resetURL = `http://localhost:8001/reset-pass/${token}`; // Change the URL to your frontend route
+    /* For Prod */
+    const resetURL = `https://qnotes.onrender.com/${token}`;
     const mailOptions = {
         from: 'johnrae08@yahoo.com',
         to: email,
