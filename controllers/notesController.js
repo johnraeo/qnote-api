@@ -14,12 +14,12 @@ const  getAllNotes = asyncHandler( async (req, res) => {
         return res.status(400).json({ message: 'No notes found' })
     }
 
-    // Add username to each note before sending the response 
+    // Add email to each note before sending the response 
     // See Promise.all with map() here: https://youtu.be/4lqJBBEpjRE 
     // You could also do this with a for...of loop
     const notesWithUser = await Promise.all(notes.map(async (note) => {
         const user = await User.findById(note.user).lean().exec()
-        return { ...note, username: user.username }
+        return { ...note, email: user.email }
     }));
 
     return res.json(notesWithUser);

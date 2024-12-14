@@ -18,18 +18,18 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @route Get /users
 // @access Private
 const createNewUser = asyncHandler(async (req, res) => {
-    const { username, password, roles, email, firstName, lastName } = req.body;
+    const { email, password, roles, firstName, lastName } = req.body;
 
     // Confirm data
-    if (!username || !password || !email || !firstName || !lastName) {
+    if (!email || !password || !email || !firstName || !lastName) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check for duplicate usernames
-    const duplicate = await User.findOne({ username }).collation({ locale: 'en', strength: 2 }).lean().exec();
+    // Check for duplicate emails
+    const duplicate = await User.findOne({ email }).collation({ locale: 'en', strength: 2 }).lean().exec();
 
     if (duplicate) {
-        return res.status(409).json({ message: 'Duplicate username' });
+        return res.status(409).json({ message: 'Duplicate email' });
     }
 
     // Check for duplicate emails
@@ -43,14 +43,14 @@ const createNewUser = asyncHandler(async (req, res) => {
     const hashedPwd = await bcrypt.hash(password, 10); // salt rounds
 
     const userObject = (!Array.isArray(roles) || !roles.length)
-    ? { username, "password": hashedPwd, email, firstName, lastName }
-    : { username, "password": hashedPwd, roles, email, firstName, lastName }
+    ? { email, "password": hashedPwd, email, firstName, lastName }
+    : { email, "password": hashedPwd, roles, email, firstName, lastName }
 
     // Create and store new user
     const user = await User.create(userObject);
 
     if (user) { //created
-        res.status(201).json({ message: `New user ${username} created` });
+        res.status(201).json({ message: `New user ${email} created` });
     } else {
         res.status(400).json({ message: 'Invalid user data received' });
     }
@@ -60,10 +60,10 @@ const createNewUser = asyncHandler(async (req, res) => {
 // @route PATCH /users
 // @access Private
 const updateUser = asyncHandler(async (req, res) => {
-    const { id, username, roles, active, password, email, firstName, lastName } = req.body;
+    const { id, email, roles, active, password, firstName, lastName } = req.body;
 
     // Confirm data
-    if (!id || !username || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean' || !email || !firstName || !lastName) {
+    if (!id || !email || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean' || !email || !firstName || !lastName) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -73,11 +73,11 @@ const updateUser = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'User not found' });
     }
 
-    // Check for duplicate username
-    const duplicate = await User.findOne({ username }).collation({ locale: 'en', strength: 2 }).lean().exec();
+    // Check for duplicate email
+    const duplicate = await User.findOne({ email }).collation({ locale: 'en', strength: 2 }).lean().exec();
     // Allow updates to the original user
     if (duplicate && duplicate?._id.toString() !== id) {
-        return res.status(409).json({ message: 'Duplicate username' });
+        return res.status(409).json({ message: 'Duplicate email' });
     }
 
     // Check for duplicate email
@@ -87,10 +87,9 @@ const updateUser = asyncHandler(async (req, res) => {
         return res.status(409).json({ message: 'Duplicate email' });
     }
 
-    user.username = username;
+    user.email = email;
     user.roles = roles;
     user.active = active;
-    user.email = email;
     user.firstName = firstName;
     user.lastName = lastName;
 
@@ -101,7 +100,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save();
 
-    res.json({ message: `${updatedUser.username} updated` });
+    res.json({ message: `${updatedUser.email} updated` });
 });
 
 // @desc Delete user
@@ -127,7 +126,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
     const result = await user.deleteOne();
 
-    const reply = `Username ${result.username} with ID ${result._id} deleted`;
+    const reply = `Email ${result.email} with ID ${result._id} deleted`;
 
     return res.json(reply);
 });
