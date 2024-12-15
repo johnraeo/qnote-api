@@ -56,10 +56,14 @@ const login = asyncHandler(async (req, res) => {
 
     // Create secure cookie with refresh token 
     res.cookie('jwt', refreshToken, {
-        httpOnly: true, //accessible only by web server 
-        secure: true, //https
-        sameSite: 'None', //cross-site cookie 
-        maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
+        // httpOnly: true, //accessible only by web server 
+        // secure: true, //https
+        // sameSite: 'None', //cross-site cookie 
+        // maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Secure only in production
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Cross-site cookies only in production
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
 
     // Send accessToken containing email and roles 
@@ -72,7 +76,7 @@ const login = asyncHandler(async (req, res) => {
 const refresh = (req, res) => {
     const cookies = req.cookies
 
-    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized' })
+    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized aa' })
 
     const refreshToken = cookies.jwt
 
@@ -84,7 +88,7 @@ const refresh = (req, res) => {
 
             const foundUser = await User.findOne({ email: decoded.email }).exec()
 
-            if (!foundUser) return res.status(401).json({ message: 'Unauthorized' })
+            if (!foundUser) return res.status(401).json({ message: 'Unauthorized sfasd' })
 
             const accessToken = jwt.sign(
                 {
