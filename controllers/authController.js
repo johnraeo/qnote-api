@@ -138,7 +138,7 @@ const forgotPass = asyncHandler(async (req, res) => {
     /* For Dev */
     // const resetURL = `http://localhost:8001/reset-pass/${token}`; // Change the URL to your frontend route
     /* For Prod */
-    const resetURL = `https://qnote.onrender.com/${token}`;
+    const resetURL = `https://qnote.onrender.com/reset-pass/${token}`;
     const mailOptions = {
         from: 'johnrae08@yahoo.com',
         to: email,
