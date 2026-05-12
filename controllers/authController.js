@@ -61,8 +61,9 @@ const login = asyncHandler(async (req, res) => {
         sameSite: 'None', //cross-site cookie 
         // secure: process.env.NODE_ENV === 'production', // only true in prod
         // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-        domain: 'qnote-api.onrender.com',
-        path: '/',
+        // domain: 'qnote-api.onrender.com',
+        // path: '/',
+        partitioned: true, // for Safari
         maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
     })
 
